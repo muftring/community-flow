@@ -6,9 +6,9 @@ class TimerError(Exception):
     """A custom exception used to report errors in use of Timer class"""
 
 class Timer:
-    def __init__(self):
+    def __init__(self, start_now=False):
         self._iterations = 0
-        self._start_time = None
+        self._start_time = time.perf_counter() if start_now else None
         self._elapsed_time = 0.0
 
     def __str__(self):
@@ -21,7 +21,7 @@ class Timer:
 
         self._start_time = time.perf_counter()
 
-    def stop(self):
+    def stop(self, show=False):
         """Stop the timer, and report the elapsed time"""
         if self._start_time is None:
             raise TimerError(f"Timer is not running. Use .start() to start it")
@@ -29,6 +29,12 @@ class Timer:
         self._elapsed_time += time.perf_counter() - self._start_time
         self._start_time = None
         self._iterations += 1
+        if show: self.show()
 
     def show(self):
-        print(str(self))
+        if self._start_time is None:
+            print("not started")
+        elif self._iterations == 0:
+            print("running - no iterations completed")
+        else:
+            print(str(self))
