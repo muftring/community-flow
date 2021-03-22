@@ -32,9 +32,10 @@ class Timer:
         if show: self.show()
 
     def show(self):
-        if self._start_time is None:
-            print("not started")
-        elif self._iterations == 0:
-            print("running - no iterations completed")
+        if self._iterations == 0:
+            if self._start_time is None:
+                print("not started")
+            else:
+                print("running - no iterations completed")
         else:
             print(str(self))
