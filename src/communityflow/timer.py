@@ -22,7 +22,7 @@ class Timer:
         self._start_time = time.perf_counter()
         return self
 
-    def stop(self, show=False):
+    def stop(self):
         """Stop the timer, and report the elapsed time"""
         if self._start_time is None:
             raise TimerError(f"Timer is not running. Use .start() to start it")
@@ -30,7 +30,6 @@ class Timer:
         self._elapsed_time += time.perf_counter() - self._start_time
         self._start_time = None
         self._iterations += 1
-        if show: self.show()
         return self
 
     def show(self):
