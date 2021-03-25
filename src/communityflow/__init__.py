@@ -1,3 +1,4 @@
 from .communityflow import *
-from .graph import create_graphs, create_graph
+from .graph.graph import create_graphs, create_graph
+from .graph.faster import create_graphs_faster, create_graph_faster
 from .timer import Timer, TimerError
