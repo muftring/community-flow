@@ -1,18 +1,8 @@
-class Sequence():
-    count = 0
-    
-    def __init__(self, init=1):
-        self.count = init-1
-    
-    def __call__(self):
-        self.count += 1
-        return self.count
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.patches import Rectangle
-#from sequence import Sequence
+from sequence import Sequence
 
 def hex2rgb(hexcode):
     h = hexcode.strip('#')
