@@ -31,9 +31,15 @@ def psd_partition(value, period=3600):
         psd_partition.end = psd_partition.begin + period
     return psd_partition.group
 
+def partitioner_function(df, column, function):
+    f = eval("lambda x: " + function)
+    return df[column].apply(lambda x: int(f(x)))
+
 def partition(df, column, partitioner):
     if isinstance(partitioner, Partitioner):
         df['__group__'] = df[column].apply(partitioner.partition)
-    else:
+    elif callable(partitioner):
         df['__group__'] = df[column].apply(partitioner)
+    elif type(partitioner) is str:
+        df['__group__'] = partitioner_function(df, column, partitioner)
     return [x.drop('__group__', axis=1) for x in [x for _, x in df.groupby('__group__')]]
