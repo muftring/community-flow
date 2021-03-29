@@ -51,9 +51,9 @@ def tabulate(nodemap, modularities):
             
     return df
 
-_debug_ = True
-def debug(s):
-    if _debug_: print(s)
+_debug_ = False
+def debug(s, **kwargs):
+    if _debug_: print(s, kwargs)
 
 def plurality(n,s,p):
     if n == 1:
@@ -137,7 +137,8 @@ def findContributors(similarity):
     
     for dst in similarity[list(similarity.keys())[0]].keys():
         contributors[dst] = {}
-        print(" >> ","{}: ".format(dst),end="")
+        #debug(" >> ","{}: ".format(dst),end="")
+        debug(" >> {dst}: ",end="")
         for src in similarity.keys():
             proportion = similarity[src][dst]['proportion']
             if similarity[src][dst]['proportion'] > 0.0:
@@ -145,8 +146,8 @@ def findContributors(similarity):
                 item = " {} = {} ({})".format(src,
                                               round(contributors[dst][src]['proportion'],3),
                                               round(contributors[dst][src]['contribution'],3))
-                print("{0:18s}".format(item),end="")
-        print("")
+                debug("{0:18s}".format(item),end="")
+        debug("")
         
     return contributors
 
@@ -170,11 +171,12 @@ def findOrigins(contributors):
         else:
             mult_contributors[group] = contributors[group]
 
-    print("  sole matching contributions:")
+    debug("  sole matching contributions:")
     for group in sole_matching_contributors:
-        print("    {}: {}".format(group,sole_matching_contributors[group]))
+        debug("    {}: {}".format(group,sole_matching_contributors[group]))
         for contrib in sole_matching_contributors[group]:
-            print("    + origin:",group,"<-",contrib,"[sole matching contributor]",sole_matching_contributors[group][contrib])
+            #print("    + origin:",group,"<-",contrib,"[sole matching contributor]",sole_matching_contributors[group][contrib])
+            debug(f"    + origin: {group} <- {contrib} [sole matching contributor] {sole_matching_contributors[group][contrib]}")
             origins[group] = {
                 'origin': contrib,
                 'contribution': sole_matching_contributors[group][contrib]['contribution'],
@@ -182,16 +184,17 @@ def findOrigins(contributors):
             }
             originators.append(contrib)
 
-    print("  sole different contributions:")
+    debug("  sole different contributions:")
     for group in sole_different_contributors:
-        print("    {}: {}".format(group,sole_different_contributors[group]))
+        debug("    {}: {}".format(group,sole_different_contributors[group]))
         for contrib in sole_different_contributors[group]:
             if contrib in originators:
-                #print("  this group originates from a group which supplied another sole contributor")
-                #print("  which means this group is the result of a split of a previous group and a group already")
-                #print("  processed has claimed the contributing group as its origin, so this group will keep its")
-                #print("  own (current) identity and forego any claim to its contributor as its origin")
-                print("    + origin:",group,"<-",group,"[sole contributor: group split]","(",contrib,":",sole_different_contributors[group],")")
+                # this group originates from a group which supplied another sole contributor
+                # which means this group is the result of a split of a previous group and a group already
+                # processed has claimed the contributing group as its origin, so this group will keep its
+                # own (current) identity and forego any claim to its contributor as its origin
+                #print("    + origin:",group,"<-",group,"[sole contributor: group split]","(",contrib,":",sole_different_contributors[group],")")
+                debug(f"    + origin: {group} <- {group} [sole contributor: group split] ({contrib}: {sole_different_contributors[group]})")
                 origins[group] = {
                     'origin': group,
                     'contribution': -1.0,
@@ -199,7 +202,8 @@ def findOrigins(contributors):
                 }
                 originators.append(group)
             else:
-                print("    + origin:",group,"<-",contrib,"[sole different contributor]",sole_different_contributors[group])
+                #print("    + origin:",group,"<-",contrib,"[sole different contributor]",sole_different_contributors[group])
+                debug(f"    + origin: {group} <- {contrib} [sole different contributor] {sole_different_contributors[group]}")
                 origins[group] = {
                     'origin': contrib,
                     'contribution': sole_different_contributors[group][contrib]['contribution'],
@@ -207,20 +211,22 @@ def findOrigins(contributors):
                 }
                 originators.append(contrib)
     
-    print("  multiple contributions:")
+    debug("  multiple contributions:")
     for group in mult_contributors:
         ordered_contributors = sorted(mult_contributors[group].items(), 
                                       key=lambda e: e[1]['proportion'], 
                                       reverse=True)
-        print("    {}: {}".format(group,ordered_contributors))
+        debug("    {}: {}".format(group,ordered_contributors))
         found = False
         for contributor in ordered_contributors:
             contrib = contributor[0]
             portion = contributor[1]
-            print("    - for group",group,"check",contrib,"(",portion,")")
+            #print("    - for group",group,"check",contrib,"(",portion,")")
+            debug(f"    - for group {group} check {contrib} ({portion})")
             if contrib not in originators:
                 found = True
-                print("    + origin:",group,"<-",contrib,"[multiple contributors]",portion)
+                #print("    + origin:",group,"<-",contrib,"[multiple contributors]",portion)
+                debug(f"    + origin: {group} <- {contrib} [multiple contributors] {portion}")
                 origins[group] = {
                     'origin': contrib,
                     'contribution': portion['contribution'],
@@ -228,13 +234,15 @@ def findOrigins(contributors):
                 }
                 originators.append(contrib)
             else:
-                print("    - contrib",contrib,"in originators",originators)
+                #print("    - contrib",contrib,"in originators",originators)
+                debug(f"    - contrib {contrib} in originators {originators}")
             if found: 
                 break
         
         if not found:
             # a new group forms, from indeterminable origin
-            print("    + origin:",group,"<-",group,"[indeterminable origin]")
+            #print("    + origin:",group,"<-",group,"[indeterminable origin]")
+            debug(f"    + origin: {group} <- {group} [indeterminable origin]")
             origins[group] = {
                 'origin': group,
                 'contribution': -1.0,
@@ -255,14 +263,15 @@ Returns:
 '''
 def renameCommunities(before,origins):
     debug("renameCommunities()")
-    print("- before:",before)
+    debug(f"- before: {before}")
     after = []
     for i in range(len(before)):
         v1 = before[i]
         v2 = origins[v1]['origin'] if v1 >= 0 else v1
-        print(" - change [",i,"] v1:",v1,"->","v2:",v2)
+        #print(" - change [",i,"] v1:",v1,"->","v2:",v2)
+        debug(f" - change [{i}] v1:{v1} -> v2:{v2}")
         after.append(v2)
-    print(" - after:",after)
+    debug(f" - after:{after}")
     return after
 
 import pandas as pd
@@ -472,16 +481,15 @@ def community_flow(df_aligned):
         targets += t
         values += v
 
-    print("labels:", len(labels))
+    debug(f"labels: {len(labels)}")
+    debug(f"sources: {len(sources)}")
+    debug(f"targets: {len(targets)}")
+    debug(f"values: {len(values)}")
 
-    print("sources:", len(sources))
-    print("targets:", len(targets))
-    print("values:", len(values))
-
-    print("\n labels:", labels)
-    print("\n sources:", sources)
-    print("\n targets:", targets)
-    print("\n values:", values)
+    debug(f"\n labels: {labels}")
+    debug(f"\n sources: {sources}")
+    debug(f"\n targets: {targets}")
+    debug(f"\n values:  {values}")
 
 
     # create nodes
