@@ -2,9 +2,6 @@ import networkx as nx
 import pandas as pd
 from .nodemap import NodeMap
 
-def nodes_in_partition(partition, source='Source', target='Target'):
-    return set(partition[source].unique()).union(partition[target].unique())
-
 def map_node_attributes(data, labels):
     return {labels[i]:data[i] for i in range(len(data))}
 
