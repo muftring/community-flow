@@ -535,3 +535,32 @@ def visualize_flow(cf, colorgrid):
             alpha=0.90)
 
     plt.show()
+
+# TODO: where does NodeMap come from?
+#         NodeMap could come from the user
+#         if a NodeMap is not provided, can we construct one?
+#.        NodeMap is an internal construct, and so it should be "hidden" from the user
+# TODO: community detection should take one graph, and return one modularity
+# TODO: running community detection on the list of graphs should be externalized (maybe in a list comprehension)
+# TODO: streamline tabulation and alignment, perhaps with DataFrame `pipe` or `apply`
+# TODO: we don't need to keep both DataFrames
+# TODO: the aligned DataFrame will be used in 'find / highlight flow of a node'
+
+from .colorgrid import ColorGrid
+
+class CommunityFlow():
+    
+    def __init__(self, graphs, nodemap):
+        '''
+        graphs: an iterable of NetworkX graphs
+        nodemap: a NodeMap object
+        '''
+        self.graphs = graphs
+        self.nodemap = nodemap
+        self.modularities = communities(self.graphs)
+        self.df = tabulate(self.nodemap, self.modularities)
+        self.df_aligned = align_community_assignments(self.df)
+        self.flow = community_flow(self.df_aligned)
+        
+    def visualize(self):
+        visualize_flow(self.flow, ColorGrid('tab20'))
