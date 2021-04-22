@@ -1,6 +1,7 @@
 import yaml
+import os
+from pathlib import Path
 
-# TODO: accept a file as descriptor_input, save as YAML string internally
 # TODO: validate source YAML (minimum fields, acceptable values, extraneous input, etc.)
 # TODO: ensure source_attributes() and target_attributes() return a list, even if empty
 # TODO: support weighted edges
@@ -11,13 +12,24 @@ import yaml
 class DataDescriptor():
     def __init__(self, source):
         self.source = source
-        self.descriptor = yaml.safe_load(source)
+        self.descriptor = self.load(source)
         
     def __call__(self):
         return self.descriptor
         
     def __str__(self):
         return self.source
+
+    def load(self, source):
+        if isinstance(source, Path) and source.is_file():
+            dsc = yaml.safe_load(source.read_text())
+        elif os.path.exists(source):
+            with open(source, 'r') as stream: dsc = yaml.safe_load(stream)
+        elif type(source) is str:
+            dsc = yaml.safe_load(source)
+        else:
+            dsc = None
+        return dsc
     
     def source_id(self):
         return self.descriptor['source']['id']
