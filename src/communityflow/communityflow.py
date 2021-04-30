@@ -550,15 +550,18 @@ from .colorgrid import ColorGrid
 
 class CommunityFlow():
     
-    def __init__(self, graphs, nodemap):
+    def __init__(self, graphs, nodemap, detector):
         '''
         graphs: an iterable of NetworkX graphs
         nodemap: a NodeMap object
+        detector: class of CommunityDetector
         '''
         self.graphs = graphs
         self.nodemap = nodemap
-        self.modularities = communities(self.graphs)
-        self.df = tabulate(self.nodemap, self.modularities)
+        self.detector = detector()
+        self.communities = [self.detector.communities(graph) for graph in self.graphs]
+        #self.modularities = communities(self.graphs)
+        self.df = tabulate(self.nodemap, self.communities)
         self.df_aligned = align_community_assignments(self.df)
         self.flow = community_flow(self.df_aligned)
         
